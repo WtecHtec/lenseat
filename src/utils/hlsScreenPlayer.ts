@@ -1,5 +1,6 @@
 import Hls from 'hls.js';
 import { ScreenBounceColor } from './screenRenderer';
+import { getApiUrl } from '../services/apiConfig';
 
 export type StreamPlaybackStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 
@@ -108,9 +109,11 @@ export class HlsScreenPlayer {
 
     for (const raw of allUrls) {
       if (raw.startsWith('/api/hls-proxy')) {
+        expandedCandidates.push(getApiUrl(raw));
+      } else if (raw.includes('/api/hls-proxy')) {
         expandedCandidates.push(raw);
       } else {
-        expandedCandidates.push(`/api/hls-proxy?url=${encodeURIComponent(raw)}`);
+        expandedCandidates.push(getApiUrl(`/api/hls-proxy?url=${encodeURIComponent(raw)}`));
         if (raw.startsWith('https://')) {
           expandedCandidates.push(raw);
         }

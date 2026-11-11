@@ -17,6 +17,7 @@ import {
   PUBLIC_M3U_REPOS,
 } from '../services/m3u8Service';
 import { StreamCategory, StreamResource } from '../types/cinema';
+import { getApiUrl } from '../services/apiConfig';
 
 interface M3U8SourceModalProps {
   isOpen: boolean;
@@ -87,7 +88,7 @@ export const M3U8SourceModal: React.FC<M3U8SourceModalProps> = ({
       setIsParsingCustomM3u(true);
       setFetchError('');
       try {
-        const res = await fetch(`/api/iptv-playlist?url=${encodeURIComponent(trimmed)}`);
+        const res = await fetch(getApiUrl(`/api/iptv-playlist?url=${encodeURIComponent(trimmed)}`));
         const txt = res.ok ? await res.text() : await (await fetch(trimmed)).text();
         const parsed = parseM3UPlaylist(txt, 'custom', '自定义列表', 200);
         setCustomParsedList(parsed);

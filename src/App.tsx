@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo, useCallback, useRef } from 'react';
-import { Stamp } from 'lucide-react';
+import { Server, Stamp } from 'lucide-react';
 import { generateAuditoriumSeats, MOVIES } from './data/cinemaData';
 import { FEATURED_M3U8_STREAMS } from './services/m3u8Service';
 import { MovieInfo, SeatData, StreamResource, ViewMode } from './types/cinema';
@@ -13,6 +13,7 @@ import { PlanarSeatMap } from './components/PlanarSeatMap';
 import { ImmersiveHudDock } from './components/ImmersiveHudDock';
 import { M3U8SourceModal } from './components/M3U8SourceModal';
 import { CommemorativeStampModal } from './components/CommemorativeStampModal';
+import { ApiConfigModal } from './components/ApiConfigModal';
 import { StreamPlaybackStatus } from './utils/hlsScreenPlayer';
 import { soundEngine } from './utils/soundEffects';
 
@@ -31,6 +32,7 @@ export default function App() {
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [isStreamModalOpen, setIsStreamModalOpen] = useState<boolean>(false);
   const [isStampModalOpen, setIsStampModalOpen] = useState<boolean>(false);
+  const [isApiModalOpen, setIsApiModalOpen] = useState<boolean>(false);
 
   const screenCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -136,8 +138,16 @@ export default function App() {
           </button>
         </nav>
 
-        {/* Zone 3: Minimalist Icon-Only Commemorative Stamp Trigger */}
-        <div className="flex items-center shrink-0">
+        {/* Zone 3: Minimalist Header Actions (API Config & Commemorative Stamp) */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <button
+            onClick={() => setIsApiModalOpen(true)}
+            title="服务端 API 配置 (CORS / 独立运行)"
+            aria-label="服务端 API 配置"
+            className="w-8 h-8 text-neutral-200 bg-white/8 hover:bg-[#C87D46] hover:text-neutral-950 rounded-full flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+          >
+            <Server className="w-4 h-4" />
+          </button>
           <button
             onClick={() => setIsStampModalOpen(true)}
             title="打卡集邮"
@@ -216,6 +226,12 @@ export default function App() {
         activeStream={activeStream}
         getScreenSnapshot={() => screenCanvasRef.current}
         onClose={() => setIsStampModalOpen(false)}
+      />
+
+      {/* Backend API Configuration & CORS Modal */}
+      <ApiConfigModal
+        isOpen={isApiModalOpen}
+        onClose={() => setIsApiModalOpen(false)}
       />
     </div>
   );

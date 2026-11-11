@@ -53,6 +53,43 @@ function rewriteM3u8Manifest(rawManifest: string, baseUrl: string): string {
 async function startServer() {
   const app = express();
 
+  // 0. Comprehensive CORS Middleware & Preflight Handling
+  app.use((req, res, next) => {
+    const origin = req.headers.origin || '*';
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader(
+      'Access-Control-Allow-Methods',
+      'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD'
+    );
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'Origin, X-Requested-With, Content-Type, Accept, Range, Authorization'
+    );
+    res.setHeader(
+      'Access-Control-Expose-Headers',
+      'Content-Length, Content-Range, Accept-Ranges, Content-Type'
+    );
+    if (req.headers.origin) {
+      res.setHeader('Vary', 'Origin');
+    }
+
+    if (req.method === 'OPTIONS') {
+      res.status(204).end();
+      return;
+    }
+    next();
+  });
+
+  // Health check endpoint for connection tests and status verification
+  app.get('/api/health', (_req, res) => {
+    res.json({
+      status: 'ok',
+      service: 'aether-cinema-api',
+      uptime: Math.round(process.uptime()),
+      timestamp: Date.now(),
+    });
+  });
+
   // 1. Server-side IPTV playlist fetcher (solves CORS & Mixed Content for .m3u/.m3u8 lists)
   app.get('/api/iptv-playlist', async (req, res) => {
     const rawUrl = typeof req.query.url === 'string' ? req.query.url.trim() : '';
@@ -190,7 +227,14 @@ async function startServer() {
   });
 
   // 3. Mount Vite dev server in development or static dist in production
-  if (process.env.NODE_ENV !== 'production') {
+  const isApiOnly =
+    process.env.API_ONLY === 'true' ||
+    process.env.STANDALONE === 'true' ||
+    process.argv.includes('--api-only');
+
+  if (isApiOnly) {
+    console.log('[Aether Cinema] Running in Standalone API-only mode (Vite client excluded)');
+  } else if (process.env.NODE_ENV !== 'production') {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -206,7 +250,11 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Aether Cinema Server & HLS Proxy listening on http://0.0.0.0:${PORT}`);
+    console.log(
+      `Aether Cinema Server & HLS Proxy listening on http://0.0.0.0:${PORT} [${
+        isApiOnly ? 'Standalone API' : 'Fullstack'
+      }] (CORS Enabled)`
+    );
   });
 }
 

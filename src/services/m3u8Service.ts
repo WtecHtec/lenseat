@@ -1,4 +1,5 @@
 import { StreamCategory, StreamResource } from '../types/cinema';
+import { getApiUrl } from './apiConfig';
 
 /**
  * Verified, Live-Tested Cantonese (粤语), Mandarin Cinema (CCTV-6 / 卫视 / 凤凰),
@@ -312,7 +313,7 @@ export async function fetchPublicM3U8Category(
   const texts = await Promise.all(
     repo.urls.map(async (u) => {
       try {
-        const proxyRes = await fetch(`/api/iptv-playlist?url=${encodeURIComponent(u)}`);
+        const proxyRes = await fetch(getApiUrl(`/api/iptv-playlist?url=${encodeURIComponent(u)}`));
         if (proxyRes.ok) return await proxyRes.text();
       } catch {
         // Fallback to direct fetch if needed

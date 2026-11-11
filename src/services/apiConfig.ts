@@ -19,21 +19,27 @@ export function normalizeApiBaseUrl(url: string): string {
 /**
  * Gets the current API base URL.
  * Priority:
- * 1. User configured value in localStorage
- * 2. Vite environment variable `VITE_API_BASE_URL`
+ * 1. User configured non-empty value in localStorage
+ * 2. Vite environment variable `VITE_API_BASE_URL` (from .env / .env.local)
  * 3. Default empty string '' (uses relative path /api)
  */
 export function getApiBaseUrl(): string {
   if (typeof window !== 'undefined') {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored !== null) {
+    if (stored !== null && stored.trim() !== '') {
       return normalizeApiBaseUrl(stored);
     }
   }
 
-  const envUrl = (import.meta as unknown as { env?: { VITE_API_BASE_URL?: string } })?.env
-    ?.VITE_API_BASE_URL;
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
   return normalizeApiBaseUrl(envUrl || '');
+}
+
+/**
+ * Gets the raw Vite environment variable value.
+ */
+export function getEnvApiBaseUrl(): string {
+  return normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL || '');
 }
 
 /**
@@ -169,12 +175,15 @@ export function useApiConfig() {
     setApiBaseUrlState(normalizeApiBaseUrl(url));
   };
 
-  const isCustomConfigured = typeof window !== 'undefined' && window.localStorage.getItem(STORAGE_KEY) !== null;
+  const isCustomConfigured =
+    typeof window !== 'undefined' &&
+    Boolean(window.localStorage.getItem(STORAGE_KEY)?.trim());
 
   return {
     apiBaseUrl,
     setApiBaseUrl: updateApiBaseUrl,
     isCustomConfigured,
+    envApiBaseUrl: getEnvApiBaseUrl(),
   };
 }
 

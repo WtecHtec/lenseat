@@ -31,7 +31,7 @@ function rewriteM3u8Manifest(rawManifest: string, baseUrl: string): string {
       const rewrittenTag = trimmed.replace(/URI="([^"]+)"/gi, (_match, uriVal: string) => {
         try {
           const resolved = new URL(uriVal, baseUrl).toString();
-          return `URI="/api/hls-proxy?url=${encodeURIComponent(resolved)}"`;
+          return `URI="hls-proxy?url=${encodeURIComponent(resolved)}"`;
         } catch {
           return _match;
         }
@@ -40,7 +40,7 @@ function rewriteM3u8Manifest(rawManifest: string, baseUrl: string): string {
     } else {
       try {
         const resolved = new URL(trimmed, baseUrl).toString();
-        out.push(`/api/hls-proxy?url=${encodeURIComponent(resolved)}`);
+        out.push(`hls-proxy?url=${encodeURIComponent(resolved)}`);
       } catch {
         out.push(trimmed);
       }

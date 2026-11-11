@@ -13,7 +13,7 @@ interface ApiConfigModalProps {
 }
 
 export const ApiConfigModal: React.FC<ApiConfigModalProps> = ({ isOpen, onClose }) => {
-  const { apiBaseUrl, setApiBaseUrl, isCustomConfigured } = useApiConfig();
+  const { apiBaseUrl, setApiBaseUrl, isCustomConfigured, envApiBaseUrl } = useApiConfig();
   const [inputValue, setInputValue] = useState(apiBaseUrl);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{
@@ -107,15 +107,19 @@ export const ApiConfigModal: React.FC<ApiConfigModalProps> = ({ isOpen, onClose 
             <div className="flex items-center gap-2 text-neutral-300">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>当前生效地址:</span>
-              <span className="font-mono text-white font-medium">
+              <span className="font-mono text-white font-medium break-all">
                 {apiBaseUrl ? apiBaseUrl : '同源 / 相对路径 (/api)'}
               </span>
             </div>
-            {isCustomConfigured && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#C87D46]/20 text-[#E29B66] border border-[#C87D46]/30 font-medium">
-                自定义配置
+            {isCustomConfigured ? (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#C87D46]/20 text-[#E29B66] border border-[#C87D46]/30 font-medium shrink-0">
+                本地自定义配置
               </span>
-            )}
+            ) : envApiBaseUrl ? (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 font-medium shrink-0">
+                来自 .env
+              </span>
+            ) : null}
           </div>
 
           {/* Input & Presets */}
@@ -142,6 +146,16 @@ export const ApiConfigModal: React.FC<ApiConfigModalProps> = ({ isOpen, onClose 
             {/* Quick Presets */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <span className="text-[11px] text-neutral-500">快捷预设:</span>
+              {envApiBaseUrl && (
+                <button
+                  type="button"
+                  onClick={() => handleSetPreset(envApiBaseUrl)}
+                  className="px-2.5 py-1 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-xs font-mono text-blue-300 hover:text-white transition-colors cursor-pointer"
+                  title=".env 文件中配置的地址"
+                >
+                  .env: {envApiBaseUrl}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => handleSetPreset('http://localhost:3204')}

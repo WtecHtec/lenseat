@@ -1,6 +1,52 @@
 import Hls from 'hls.js';
 import { ScreenBounceColor } from './screenRenderer';
-import { getApiUrl } from '../services/apiConfig';
+import { getApiUrl, getApiBaseUrl } from '../services/apiConfig';
+
+/**
+ * Custom HLS Loader that ensures all sub-playlist and segment requests
+ * respect the configured API Base URL (including subpaths like /lenseat).
+ */
+class ApiAwareHlsLoader extends (Hls.DefaultConfig.loader as unknown as new (
+  config: unknown
+) => {
+  load: (context: { url: string }, config: unknown, callbacks: unknown) => void;
+}) {
+  load(context: { url: string }, config: unknown, callbacks: unknown) {
+    if (context && typeof context.url === 'string') {
+      const url = context.url;
+      if (
+        url.startsWith('/api/hls-proxy') ||
+        url.startsWith('hls-proxy') ||
+        url.startsWith('api/hls-proxy')
+      ) {
+        const path = url.startsWith('/') ? url : `/${url}`;
+        const fullPath = path.startsWith('/api/')
+          ? path
+          : `/api/${path.replace(/^\/+/, '')}`;
+        context.url = getApiUrl(fullPath);
+      } else if (url.includes('/api/hls-proxy')) {
+        try {
+          const parsed = new URL(url, window.location.href);
+          const base = getApiBaseUrl();
+          if (base) {
+            const baseParsed = new URL(base, window.location.href);
+            if (
+              parsed.origin === window.location.origin ||
+              (parsed.origin === baseParsed.origin &&
+                baseParsed.pathname !== '/' &&
+                !parsed.pathname.startsWith(baseParsed.pathname))
+            ) {
+              context.url = getApiUrl(`/api/hls-proxy${parsed.search}`);
+            }
+          }
+        } catch {
+          // Keep original url if parsing fails
+        }
+      }
+    }
+    super.load(context, config, callbacks);
+  }
+}
 
 export type StreamPlaybackStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 
@@ -108,10 +154,23 @@ export class HlsScreenPlayer {
     const expandedCandidates: string[] = [];
 
     for (const raw of allUrls) {
-      if (raw.startsWith('/api/hls-proxy')) {
-        expandedCandidates.push(getApiUrl(raw));
+      if (
+        raw.startsWith('/api/hls-proxy') ||
+        raw.startsWith('hls-proxy') ||
+        raw.startsWith('api/hls-proxy')
+      ) {
+        const path = raw.startsWith('/') ? raw : `/${raw}`;
+        const fullPath = path.startsWith('/api/')
+          ? path
+          : `/api/${path.replace(/^\/+/, '')}`;
+        expandedCandidates.push(getApiUrl(fullPath));
       } else if (raw.includes('/api/hls-proxy')) {
-        expandedCandidates.push(raw);
+        try {
+          const parsed = new URL(raw, window.location.href);
+          expandedCandidates.push(getApiUrl(`/api/hls-proxy${parsed.search}`));
+        } catch {
+          expandedCandidates.push(raw);
+        }
       } else {
         expandedCandidates.push(getApiUrl(`/api/hls-proxy?url=${encodeURIComponent(raw)}`));
         if (raw.startsWith('https://')) {
@@ -172,6 +231,7 @@ export class HlsScreenPlayer {
 
     if (Hls.isSupported()) {
       const hls = new Hls({
+        loader: ApiAwareHlsLoader as never,
         enableWorker: true,
         lowLatencyMode: false,
         backBufferLength: 60,

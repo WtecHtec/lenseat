@@ -93,6 +93,20 @@ export async function testServerConnection(targetUrl?: string): Promise<{
   const base = targetUrl !== undefined ? normalizeApiBaseUrl(targetUrl) : getApiBaseUrl();
   const testEndpoint = base ? `${base}/api/health` : '/api/health';
 
+  // Check for Mixed Content block (HTTPS page requesting HTTP API)
+  if (
+    typeof window !== 'undefined' &&
+    window.location.protocol === 'https:' &&
+    testEndpoint.startsWith('http://')
+  ) {
+    return {
+      ok: false,
+      latency: 0,
+      message:
+        'Mixed Content 拦截：当前页面运行在 HTTPS 下，浏览器禁止请求不安全的 HTTP 接口。请将后端配置为 HTTPS 或使用反向代理。',
+    };
+  }
+
   const startTime = performance.now();
   try {
     const controller = new AbortController();

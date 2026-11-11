@@ -69,6 +69,11 @@ export const ApiConfigModal: React.FC<ApiConfigModalProps> = ({ isOpen, onClose 
     setTestResult(null);
   };
 
+  const isMixedContentRisk =
+    typeof window !== 'undefined' &&
+    window.location.protocol === 'https:' &&
+    inputValue.trim().toLowerCase().startsWith('http://');
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
@@ -102,6 +107,23 @@ export const ApiConfigModal: React.FC<ApiConfigModalProps> = ({ isOpen, onClose 
 
         {/* Content */}
         <div className="p-6 space-y-5 overflow-y-auto max-h-[75vh]">
+          {/* Mixed Content Warning */}
+          {isMixedContentRisk && (
+            <div className="p-3.5 rounded-xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs flex items-start gap-2.5 animate-fade-in">
+              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <div className="font-semibold text-amber-200">
+                  检测到 Mixed Content（混合内容）拦截风险
+                </div>
+                <div className="text-[11px] text-amber-300/80 leading-relaxed">
+                  当前前端页面是通过 <strong className="text-white">HTTPS</strong> 访问的，现代浏览器会强制拦截对明文 <strong className="text-white">HTTP</strong> 接口的调用。
+                  <br />
+                  <strong>解决方案：</strong> 给后端部署 SSL 证书并配置为 <code className="text-white font-mono">https://</code>，或通过 Nginx 配置 HTTPS 反向代理。
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Current Status Pill */}
           <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/6 text-xs">
             <div className="flex items-center gap-2 text-neutral-300">

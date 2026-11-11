@@ -1,0 +1,6 @@
+{
+  "name": "Aether Cinema 3D — 在线选座与沉浸式观影剧场",
+  "description": "支持平面精准选座、丝滑镜头的3D空间飞入转场、第一人称360°视角旋转与实时银幕光影的沉浸式在线电影院选票系统。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

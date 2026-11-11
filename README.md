@@ -57,6 +57,30 @@ npm run dev
 
 ---
 
+### 方式三：PM2 生产守护进程部署 (端口 3204)
+
+使用 PM2 在后台常驻运行后端服务（端口 3204，已内置崩溃自启与日志管理）：
+
+```bash
+# 启动服务
+npm run pm2:start
+# 或执行: pm2 start ecosystem.config.cjs
+
+# 查看运行状态
+npm run pm2:status
+
+# 查看实时日志
+npm run pm2:logs
+
+# 重启 / 停止
+npm run pm2:restart
+npm run pm2:stop
+```
+
+在前端的「服务端 API 配置」弹窗中，可直接一键选择预设 `http://localhost:3204 (PM2)` 进行连接。
+
+---
+
 ## 📜 常用脚本
 
 | 脚本命令 | 说明 |
@@ -64,6 +88,10 @@ npm run dev
 | `npm run dev:client` | 单独启动前端 Vite 开发服务（默认端口 5173） |
 | `npm run dev:server` | 单独启动后端 Express API 服务（包含 CORS，默认端口 3000） |
 | `npm run dev` | 整合启动（前端与后端同端口 3000） |
+| `npm run pm2:start` | 使用 PM2 启动生产级常驻后端服务（监听端口 3204） |
+| `npm run pm2:stop` | 停止 PM2 后端服务 |
+| `npm run pm2:restart` | 重启 PM2 后端服务 |
+| `npm run pm2:logs` | 查看 PM2 实时日志 |
 | `npm run build` | 构建前端生产资源包至 `dist/` |
 | `npm run start` | 生产模式启动后端服务 |
 | `npm run lint` | TypeScript 类型校验 |

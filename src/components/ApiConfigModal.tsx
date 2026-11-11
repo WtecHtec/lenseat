@@ -144,17 +144,17 @@ export const ApiConfigModal: React.FC<ApiConfigModalProps> = ({ isOpen, onClose 
               <span className="text-[11px] text-neutral-500">快捷预设:</span>
               <button
                 type="button"
+                onClick={() => handleSetPreset('http://localhost:3204')}
+                className="px-2.5 py-1 rounded-lg bg-[#C87D46]/20 hover:bg-[#C87D46]/30 border border-[#C87D46]/40 text-xs font-mono text-[#E29B66] hover:text-white transition-colors cursor-pointer"
+              >
+                http://localhost:3204 (PM2)
+              </button>
+              <button
+                type="button"
                 onClick={() => handleSetPreset('http://localhost:3000')}
                 className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-neutral-300 hover:text-white transition-colors cursor-pointer"
               >
                 http://localhost:3000
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSetPreset('http://127.0.0.1:3000')}
-                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-neutral-300 hover:text-white transition-colors cursor-pointer"
-              >
-                http://127.0.0.1:3000
               </button>
               <button
                 type="button"
